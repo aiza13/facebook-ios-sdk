@@ -393,6 +393,7 @@ BOOL FBIsDeviceIPad() {
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request
     navigationType:(UIWebViewNavigationType)navigationType {
   NSURL* url = request.URL;
+	BOOL shouldLoad = YES;
 
   if ([url.scheme isEqualToString:@"fbconnect"]) {
     if ([[url.resourceSpecifier substringToIndex:8] isEqualToString:@"//cancel"]) {
@@ -412,21 +413,30 @@ BOOL FBIsDeviceIPad() {
       [self dialogDidSucceed:url];
       [self dismissWithSuccess:YES animated:YES];
     }
-    return NO;
+    shouldLoad = NO;
   } else if ([_loadingURL isEqual:url]) {
-    return YES;
+    shouldLoad = YES;
   } else if (navigationType == UIWebViewNavigationTypeLinkClicked) {
     if ([_delegate respondsToSelector:@selector(dialog:shouldOpenURLInExternalBrowser:)]) {
       if (![_delegate dialog:self shouldOpenURLInExternalBrowser:url]) {
-        return NO;
+        shouldLoad = NO;
       }
     }
-    
-    [[UIApplication sharedApplication] openURL:request.URL];
-    return NO;
+
+	  if ( shouldLoad ) {
+		  [[UIApplication sharedApplication] openURL:request.URL];
+		  shouldLoad = NO;
+	  }
   } else {
-    return YES;
+	  shouldLoad = YES;
   }
+
+	if ( shouldLoad ) {
+		[_spinner sizeToFit];
+		[_spinner startAnimating];
+		_spinner.center = _webView.center;
+	}
+	return shouldLoad;
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
@@ -580,10 +590,6 @@ BOOL FBIsDeviceIPad() {
     kBorderWidth + _titleLabel.frame.size.height,
     innerWidth,
     self.frame.size.height - (_titleLabel.frame.size.height + 1 + kBorderWidth*2));
-
-  [_spinner sizeToFit];
-  [_spinner startAnimating];
-  _spinner.center = _webView.center;
 
   UIWindow* window = [UIApplication sharedApplication].keyWindow;
   if (!window) {
