@@ -114,5 +114,13 @@ For Request and Dialog, errors are handled by FBRequestDelegate and FBDialogDele
 
 Troubleshooting
 ------------
-: I get a ''missing client_id'' error.
-; Read the setup instructions and make sure your application ID is set.
+* I get a ''missing client_id'' error.
+
+Read the setup instructions and make sure your application ID is set.
+
+* When a dialog is presented, it appears with an odd transform.
+
+Note that this library uses either the application's key window or (if no such key window is available), the window at index 0.  If the window used bears a transform other than the identity transform, you may see whacky results.
+
+You can either modify the source to always use the window at index 0, or alternatively, you can ensure that the window the library does use has the identity transform.
+
